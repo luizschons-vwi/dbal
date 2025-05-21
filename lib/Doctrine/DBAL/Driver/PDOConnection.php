@@ -27,26 +27,8 @@ use PDO;
  *
  * @since 2.0
  */
-class PDOConnection extends PDO implements Connection, ServerInfoAwareConnection
+class PDOConnection extends PDO implements ServerInfoAwareConnection
 {
-    /**
-     * @param string      $dsn
-     * @param string|null $user
-     * @param string|null $password
-     * @param array|null  $options
-     *
-     * @throws PDOException in case of an error.
-     */
-    public function __construct($dsn, $user = null, $password = null, array $options = null)
-    {
-        try {
-            parent::__construct($dsn, $user, $password, $options);
-            $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, ['Doctrine\DBAL\Driver\PDOStatement', []]);
-            $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (\PDOException $exception) {
-            throw new PDOException($exception);
-        }
-    }
 
     /**
      * {@inheritdoc}
@@ -81,30 +63,14 @@ class PDOConnection extends PDO implements Connection, ServerInfoAwareConnection
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $query The SQL query
+     * @param int|null $fetchMode The fetch mode must be one of the PDO::FETCH_* constants
+     * @param mixed ...$fetchModeArgs Additional mode specific arguments
+     * @return \PDOStatement|false
      */
-    public function query()
+    public function query(string $query, ?int $fetchMode = null, mixed ...$fetchModeArgs): \PDOStatement|false
     {
-        $args = func_get_args();
-        $argsCount = count($args);
-
-        try {
-            if ($argsCount == 4) {
-                return parent::query($args[0], $args[1], $args[2], $args[3]);
-            }
-
-            if ($argsCount == 3) {
-                return parent::query($args[0], $args[1], $args[2]);
-            }
-
-            if ($argsCount == 2) {
-                return parent::query($args[0], $args[1]);
-            }
-
-            return parent::query($args[0]);
-        } catch (\PDOException $exception) {
-            throw new PDOException($exception);
-        }
+        return parent::query($query, $fetchMode, ...$fetchModeArgs);
     }
 
     /**
